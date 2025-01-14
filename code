@@ -1,0 +1,329 @@
+import librosa
+import librosa.display
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+!pip install librosa
+
+import IPython.display as ipd
+import librosa
+import librosa.display
+
+filename=r"D:\IMP ITEM\PROJECT\BYB\pranav relax.wav"
+
+
+filename=r"D:\IMP ITEM\PROJECT\dt\conc\pranav conc.wav"
+
+plt.figure(figsize=(14,5))
+data,sample_rate=librosa.load(filename)
+librosa.display.waveshow(data,sr=sample_rate)
+ipd.Audio(filename)
+
+sample_rate
+
+from scipy.io import wavfile as wav
+wave_sample_rate, wave_audio=wav.read(filename)
+
+wave_sample_rate
+
+
+wave_audio
+
+data
+
+audio_file_path='UrbanSound8K/100263-2-0-3.wav'
+librosa_audio_data,librosa_sample_rate=librosa.load(audio_file_path)
+
+audio_file_path=r"D:\IMP ITEM\PROJECT\dt\relax\pranav relax.wav"
+librosa_audio_data,librosa_sample_rate=librosa.load(audio_file_path)
+
+print(librosa_audio_data)
+
+plt.figure(figsize=(12, 4))
+plt.plot(librosa_audio_data)
+
+### Lets read with scipy
+from scipy.io import wavfile as wav
+wave_sample_rate, wave_audio = wav.read(audio_file_path) 
+
+wave_audio
+
+mfccs = librosa.feature.mfcc(y=librosa_audio_data, sr=librosa_sample_rate, n_mfcc=40)
+print(mfccs.shape)
+
+mfccs
+
+def features_extractor(file):
+    audio, sample_rate = librosa.load(file_name, res_type='kaiser_fast') 
+    mfccs_features = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40)
+    mfccs_scaled_features = np.mean(mfccs_features.T,axis=0)
+    
+    return mfccs_scaled_features
+    
+import numpy as np
+# import required module
+from pathlib import Path
+ 
+# assign directory
+directory = 'D:\IMP ITEM\PROJECT\dt\conc'
+extracted_features=[]
+# iterate over files in
+# that directory
+files = Path(directory).glob('*')
+for file in files:
+    print(file)
+    file_name = file
+    data=features_extractor(file)
+    extracted_features.append([data,"0"])
+
+
+import pandas as pd
+### converting extracted_features to Pandas dataframe
+extracted_features_df=pd.DataFrame(extracted_features,columns=['feature','class'])
+extracted_features_df.head()
+
+# import required module
+import glob
+ 
+# assign directory
+directory = r'D:\IMP ITEM\PROJECT\dt\relax'
+ 
+# iterate over files in
+# that directory
+for filename in glob.iglob(f'{directory}/*'):
+    print(filename)
+    file_name = file
+    data=features_extractor(file)
+    extracted_features.append([data,"1"])
+
+### converting extracted_features to Pandas dataframe
+extracted_features_df=pd.DataFrame(extracted_features,columns=['feature','class'])
+extracted_features_df.head(8)
+
+### Split the dataset into independent and dependent dataset
+X=np.array(extracted_features_df['feature'].tolist())
+y=np.array(extracted_features_df['class'].tolist())
+X.shape
+
+y
+
+from tensorflow.keras.utils import to_categorical
+from sklearn.preprocessing import LabelEncoder
+labelencoder=LabelEncoder()
+y=to_categorical(labelencoder.fit_transform(y))
+y### Train Test Split
+from sklearn.model_selection import train_test_split
+X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.2,random_state=0)
+X_train
+
+y
+
+X_train.shape
+
+X_test.shape
+
+y_train.shape
+
+y_test.shape
+
+import tensorflow as tf
+print(tf.__version__)
+2.7.0
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense,Dropout,Activation,Flatten
+from tensorflow.keras.optimizers import Adam
+from sklearn import metrics
+### No of classes
+num_labels=y.shape[1]
+model=Sequential()
+###first layer
+model.add(Dense(100,input_shape=(40,)))
+model.add(Activation('relu'))
+model.add(Dropout(0.5))
+###second layer
+model.add(Dense(200))
+model.add(Activation('relu'))
+model.add(Dropout(0.5))
+###third layer
+model.add(Dense(100))
+model.add(Activation('relu'))
+model.add(Dropout(0.5))
+
+###final layer
+model.add(Dense(num_labels))
+model.add(Activation('softmax'))
+model.summary()
+
+model.compile(loss='categorical_crossentropy',metrics=['accuracy'],optimizer='adam')
+## Trianing my model
+from tensorflow.keras.callbacks import ModelCheckpoint
+from datetime import datetime 
+
+num_epochs = 200
+num_batch_size = 32
+
+checkpointer = ModelCheckpoint(filepath='saved_models/audio_classification.h5', 
+                               verbose=1, save_best_only=True)
+start = datetime.now()
+
+model.fit(X_train,y_train,batch_size=num_batch_size, epochs=num_epochs, validation_data=(X_test, y_test), callbacks=[checkpointer], verbose=1)
+
+
+duration = datetime.now() - start
+print("Training completed in time: ", duration)
+
+
+test_accuracy=model.evaluate(X_test,y_test,verbose=0)
+print(test_accuracy[1])
+0.5
+from matplotlib import pyplot as plt
+history = model.fit(X_train, y_train,validation_split = 0.1, epochs=200, batch_size=32)
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'val'], loc='upper left')
+plt.show()
+
+
+plt.subplot(2,1,2)
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper right')
+
+filename=r"D:\IMP ITEM\PROJECT\BYB\rahul k relax.wav"
+audio, sample_rate = librosa.load(filename, res_type='kaiser_fast') 
+mfccs_features = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40)
+mfccs_scaled_features = np.mean(mfccs_features.T,axis=0)
+
+#print(mfccs_scaled_features)
+mfccs_scaled_features=mfccs_scaled_features.reshape(1,-1)
+#print(mfccs_scaled_features)
+#print(mfccs_scaled_features.shape)
+predicted_label=model.predict(mfccs_scaled_features)
+#print(predicted_label)
+brr=[]
+for i in predicted_label:
+    for j in i:
+        brr.append(j)
+max_value = max(brr)  
+max_index = brr.index(max_value)
+#print(max_index)
+if max_index==0:
+    print("Concentrating")
+if max_index==1:
+    print("Relaxing")
+
+
+from keras.models import load_model
+filename=r"D:\IMP ITEM\PROJECT\BYB\rahul k relax.wav"
+audio, sample_rate = librosa.load(filename, res_type='kaiser_fast') 
+mfccs_features = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40)
+mfccs_scaled_features = np.mean(mfccs_features.T,axis=0)
+#print(mfccs_scaled_features)
+mfccs_scaled_features=mfccs_scaled_features.reshape(1,-1)
+
+model = load_model(r"C:\Users\prana\Desktop\PRJT\saved_models\audio_classification.h5")
+result = model.predict(mfccs_scaled_features)
+#print(result)
+brr=[]
+for i in result:
+    for j in i:
+        brr.append(j)
+max_value = max(brr)  
+max_index = brr.index(max_value)
+if max_index==0:
+    print("Concentrating")
+if max_index==1:
+    print("Relaxing")
+
+def Binueral_beats():
+    from AccelBrainBeat.brainbeat.binaural_beat import BinauralBeat
+    from os import path
+    from pydub import AudioSegment
+
+    brain_beat = BinauralBeat() # for binaural beats.
+    brain_beat.save_beat(
+        output_file_name="save_binaural_beat.wav",
+        frequencys=(600, 630),
+        play_time=10,
+        volume=0.9
+    )
+
+    #files
+
+    src = "save_binaural_beat.wav"
+    dst = "output.mp3"
+
+    #convert wav to mp3
+    sound = AudioSegment.from_mp3(src)
+    sound.export(dst, format="wav")
+
+
+def Binueral_beats_conc():
+    from AccelBrainBeat.brainbeat.binaural_beat import BinauralBeat
+    from os import path
+    from pydub import AudioSegment
+
+    brain_beat = BinauralBeat() # for binaural beats.
+    brain_beat.save_beat(
+        output_file_name="save_binaural_beat.wav",
+        frequencys=(1200, 1230),
+        play_time=10,
+        volume=0.9
+    )
+
+    #files
+
+    src = "save_binaural_beat.wav"
+    dst = "output.mp3"
+
+    #convert wav to mp3
+    sound = AudioSegment.from_mp3(src)
+    sound.export(dst, format="wav")
+if max_index==0:
+    Binueral_beats()
+if max_index==1:
+    Binueral_beats()
+
+
+
+!pip install pydub
+import warnings
+warnings.filterwarnings(action='once')
+def pred(fname):
+    audio, sample_rate = librosa.load(fname, res_type='kaiser_fast') 
+    mfccs_features = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40)
+    mfccs_scaled_features = np.mean(mfccs_features.T,axis=0)
+    mfccs_scaled_features=mfccs_scaled_features.reshape(1,-1)
+
+    model = load_model(r"C:\Users\prana\Desktop\PRJT\saved_models\audio_classification.h5")
+    result = model.predict(mfccs_scaled_features)
+    brr=[]
+    for i in result:
+        for j in i:
+            brr.append(j)
+    max_value = max(brr)  
+    max_index = brr.index(max_value)
+    if max_index==0:
+        print("Concentrating")
+        Binueral_beats_conc()
+    if max_index==1:
+        print("Relaxing")
+        Binueral_beats()
+    
+pred(r"D:\IMP ITEM\PROJECT\BYB\rahul k relax.wav")
+
+
+# import required module
+from playsound import playsound
+
+# for playing note.mp3 file
+playsound(r"C:\\U`sers\prana\Desktop\PRJT\save_binaural_beat.wav")
+print('playing sound using playsound')
+playing sound using playsound
+!pip install playsound==1.2.2
